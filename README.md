@@ -1,5 +1,3 @@
-
-
 # Stalled Transition — Agent-Based Model
 
 **Associated paper:** Stearns SC (submitted) "Stalled: Humans and the major evolutionary transition from individual to group." *Evolutionary Human Sciences.*
@@ -48,7 +46,7 @@ On Apple Silicon (M1–M4), NumPy links automatically to Apple's Accelerate fram
 
 ### Smoke test (5–10 minutes)
 
-Runs coarse 8×8 grids with 3 replicates — enough to verify output and inspect figure layout:
+Runs coarse 12×12 grids (10×10 for the Fig 6 sub-grids) with 3 replicates — enough to verify output and inspect figure layout:
 
 ```bash
 source .venv/bin/activate
@@ -60,7 +58,7 @@ Open `figures/` to inspect all eight figures.
 
 ### Full production sweep
 
-30×30 grids (Figs 1–5, 7), 24×24 with 10 reps (Fig 6 sensitivity), 30-point slice (Fig 8):
+30×30 grids (Figs 1–2), 24×24 grids (Figs 3–5, 7), nine 20×20 sub-grids × 10 reps (Fig 6 sensitivity), 30-point slice (Fig 8):
 
 ```bash
 python sweep.py
@@ -183,18 +181,18 @@ These labels identify model-defined threshold states. The bistability index (1 �
 
 After `python sweep.py`, `results/` contains:
 
-| File | Figure | Axes |
-|---|---|---|
-| `fig1_grids.npz` | Fig 1 | Q₀ × ṙ |
-| `fig2_grids.npz` | Fig 2 | ω × φ |
-| `fig3_grids.npz` | Fig 3 | s × ṙ |
-| `fig4_grids.npz` | Fig 4 | T_P (cultural_weight) × ṙ |
-| `fig5_grids.npz` | Fig 5 | Δω (bgs_cultural_rise) × Q₀ |
-| `fig6_sensitivity.npz` | Fig 6 | 9 sub-grids: N × G × lag |
-| `fig7_grids.npz` | Fig 7 | α_TP (tp_adapt) × Q₀ |
-| `fig8_tp_slice.npz` | Fig 8 | T_P (1D) at fixed Q₀ = 0.45 |
+| File | Figure | Axes | Grid |
+|---|---|---|---|
+| `fig1_grids.npz` | Fig 1 | Q₀ × ṙ | 30×30 |
+| `fig2_grids.npz` | Fig 2 | ω × φ | 30×30 |
+| `fig3_grids.npz` | Fig 3 | s × ṙ | 24×24 |
+| `fig4_grids.npz` | Fig 4 | T_P (cultural_weight) × ṙ | 24×24 |
+| `fig5_grids.npz` | Fig 5 | Δω (bgs_cultural_rise) × Q₀ | 24×24 |
+| `fig6_sensitivity.npz` | Fig 6 | 9 sub-grids: N × G × lag | 9 × (20×20) |
+| `fig7_grids.npz` | Fig 7 | α_TP (tp_adapt) × Q₀ | 24×24 |
+| `fig8_tp_slice.npz` | Fig 8 | T_P (1D) at fixed Q₀ = 0.45 | 30 |
 
-Each 2D grid `.npz` file contains:
+Grid shape is `(res, res)`: **30×30** for Figs 1–2, **24×24** for Figs 3–5 and 7; the nine Fig 6 sub-grids are **20×20**. The example below loads `fig1_grids.npz` (30×30):
 
 ```python
 import numpy as np
@@ -246,16 +244,16 @@ data["axis_tp"]       # (30,) — T_P values (0 to 1)
 
 ## Performance
 
-The sweep uses `multiprocessing.Pool` with `cpu_count() − 1` workers by default. Expected timings for the full sweep (all 8 figures); these scale with grid size, so re-measure if you change it:
+The sweep uses `multiprocessing.Pool` with `cpu_count() − 1` workers by default. Expected timings for the full sweep (all 8 figures):
 
 | Hardware | Approx. time |
 |---|---|
-| Apple M1 iMac | ~170 min |
-| Apple M3/M4 iMac | ~115–135 min |
-| Linux, 16 cores | ~45–50 min |
-| Linux, 32 cores | ~30 min |
+| Apple M1 iMac | ~90 min |
+| Apple M3/M4 iMac | ~60–70 min |
+| Linux, 16 cores | ~25 min |
+| Linux, 32 cores | ~15 min |
 
-The sensitivity analysis (Fig 6: 9 sub-grids × 576 points × 10 reps = 51,840 runs) is the longest single job. Figs 1–5 and 7 each run 900 points × 20 reps = 18,000 runs.
+The sensitivity analysis (Fig 6: 9 sub-grids × 400 points × 10 reps = 36,000 runs) is the longest single job. Figs 1–2 run 900 points × 20 reps = 18,000 runs each; Figs 3–5 and 7 run 576 points × 20 reps = 11,520 runs each.
 
 ---
 
@@ -264,4 +262,3 @@ The sensitivity analysis (Fig 6: 9 sub-grids × 576 points × 10 reps = 51,840 r
 If you use this code in published work, please cite:
 
 > Stearns SC (submitted) Stalled: Humans and the major evolutionary transition from individual to group. *Evolutionary Human Sciences.* Code available at [repository URL — to be added before submission].
-
